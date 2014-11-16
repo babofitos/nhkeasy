@@ -8,7 +8,8 @@ module.exports = function (nhkUrl, cb) {
       if (!err) {
         var $ = cheerio.load(body);
         var numberOfParagraphs = $('#newsarticle').children().length;
-        var newsTitle = $('#newstitle').text();
+        //take out preceding news web easy|
+        var newsTitle = $('title').text().split('|')[1];
 
         $('#newsarticle').children().each(function (index, element) {
           
@@ -21,11 +22,14 @@ module.exports = function (nhkUrl, cb) {
           
 
           if (index == numberOfParagraphs - 1) {
-            cb(article);
-          }
-
-          //add newline per paragraph but ignore weird empty p nodes
-          if (p.children().length >0) {
+            var output = {
+              article: article,
+              title: newsTitle
+            }
+            cb(output);
+          } 
+          //add newline per paragraph but ignore weird empty p nodes 
+          if (p.next().children().length >0) {
             article += '\n';
           }
         })

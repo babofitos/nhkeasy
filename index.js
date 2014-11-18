@@ -2,7 +2,9 @@ var request = require('request');
 var cheerio = require('cheerio');
 var article = '';
 
-module.exports = function (nhkUrl, cb) {
+module.exports = function (options, nhkUrl, cb) {
+  options = options || {};
+
   request(nhkUrl,
     function (err, res, body) {
       if (!err) {
@@ -24,9 +26,9 @@ module.exports = function (nhkUrl, cb) {
             }
             cb(output);
           } 
-          //add newline per paragraph but ignore weird empty p nodes 
+          //add separator per paragraph but ignore weird empty p nodes 
           if (p.next().children().length >0) {
-            article += '\n';
+            article += options.separator || '';
           }
         })
       }

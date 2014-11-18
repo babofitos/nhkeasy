@@ -14,12 +14,8 @@ module.exports = function (nhkUrl, cb) {
         $('#newsarticle').children().each(function (index, element) {
           
           var p = $(this);
-          p.contents().each(function (i, e) {
-            var pChild = $(this);
-
-            article += extractText($, pChild, '', '');
-          })
           
+          article += extractText($, p, '', '');
 
           if (index == numberOfParagraphs - 1) {
             var output = {

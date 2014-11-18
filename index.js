@@ -1,8 +1,8 @@
 var request = require('request');
 var cheerio = require('cheerio');
-var article = '';
 
 module.exports = function (options, nhkUrl, cb) {
+  var article = '';
   options = options || {};
 
   request(nhkUrl,

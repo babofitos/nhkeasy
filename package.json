@@ -1,6 +1,6 @@
 {
   "name": "nhkeasy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "nhk web easy scraper",
   "main": "index.js",
   "scripts": {

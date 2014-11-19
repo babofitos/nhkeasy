@@ -7,7 +7,7 @@ module.exports = function (options, nhkUrl, cb) {
 
   request(nhkUrl,
     function (err, res, body) {
-      if (!err) {
+      if (!err && res.statusCode == 200) {
         var $ = cheerio.load(body);
         var numberOfParagraphs = $('#newsarticle').children().length;
         //take out preceding news web easy|
@@ -24,13 +24,15 @@ module.exports = function (options, nhkUrl, cb) {
               article: article,
               title: newsTitle
             }
-            cb(output);
+            cb(null, output);
           } 
           //add separator per paragraph but ignore weird empty p nodes 
           if (p.next().children().length >0) {
             article += options.separator || '';
           }
         })
+      } else {
+        cb(err);
       }
     }
   )

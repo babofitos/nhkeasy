@@ -17,7 +17,7 @@ module.exports = function (options, nhkUrl, cb) {
           
           var p = $(this);
           
-          article += extractText($, p, '', '');
+          article += extractText($, p);
 
           if (index == numberOfParagraphs - 1) {
             var output = {
@@ -43,23 +43,17 @@ module.exports = function (options, nhkUrl, cb) {
 }
 
 //get relevant text nodes, ignore the furigana
-function extractText($, node, part, whole) {
+function extractText($, node) {
+  var output = '';
   //text node
   if (node[0].name == undefined) {
     return node.text();
   }
 
-  //furigana
-  if (node[0].name == 'rt') {
-    return '';
-  }
-
   if (node[0].name !== 'rt') {
     node.contents().each(function (i, el) {
-      part = '';
-      part = extractText($, $(this), part, '');
-      whole += part;
+      output += extractText($, $(this));
     })
   }
-  return whole;
+  return output;
 }

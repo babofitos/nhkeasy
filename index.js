@@ -24,7 +24,11 @@ module.exports = function (options, nhkUrl, cb) {
               article: article,
               title: newsTitle
             }
-            cb(null, output);
+            if (output.article == undefined || output.title == undefined) {
+              cb('Scraping went wrong, article: ' + output.article + ' title: ' + output.title);
+            } else {
+              cb(null, output);
+            }
           } 
           //add separator per paragraph but ignore weird empty p nodes 
           if (p.next().children().length >0) {
@@ -32,7 +36,7 @@ module.exports = function (options, nhkUrl, cb) {
           }
         })
       } else {
-        cb(err);
+        cb('Unable to resolve ' + nhkUrl);
       }
     }
   )

@@ -13,6 +13,10 @@ module.exports = function (options, nhkUrl, cb) {
         //take out preceding news web easy|
         var newsTitle = $('title').text().split('|')[1];
 
+        if (!numberOfParagraphs || !newsTitle.length) {
+          cb('Cannot find relevant nodes to scrape');
+        }
+
         $('#newsarticle').children().each(function (index, element) {
           
           var p = $(this);
@@ -24,11 +28,8 @@ module.exports = function (options, nhkUrl, cb) {
               article: article,
               title: newsTitle
             }
-            if (output.article == undefined || output.title == undefined) {
-              cb('Scraping went wrong, article: ' + output.article + ' title: ' + output.title);
-            } else {
-              cb(null, output);
-            }
+
+            cb(null, output);
           } 
           //add separator per paragraph but ignore weird empty p nodes 
           if (p.next().children().length >0) {

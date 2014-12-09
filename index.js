@@ -18,7 +18,9 @@ module.exports = function (options, body, cb) {
     cornet.select('#newsarticle > p', function(elem) {
       var p = $(elem);
       
-      ws.emit('paragraph', extractText($, p));
+      if (p.children().length > 0) {
+        ws.emit('paragraph', extractText($, p));
+      }
     });
 
     return ws;

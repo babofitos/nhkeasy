@@ -82,16 +82,31 @@ describe('nhkeasy', function() {
     });
 
     it('should emit paragraphs when found', function(done) {
-      var i = 0;
+      var res = [];
+
       nhkws.on('paragraph', function(p) {
-        if (i === 0) {
-          assert.equal(p, '２２日午後１０時ころ、長野県でマグニチュード６．７（Ｍ６．７）の地震がありました。長野市と小谷村、小川村で震度６弱でした。白馬村と信濃町は震度５強でした。');
-        }
-        else if (i === 1) {
-          assert.equal(p, 'この地震で４５人がけがをしたと、２５日の昼までにわかっています。そして、３１の家が全部壊れて、４６の家が半分壊れました。');
-          done();
-        }
+       res.push(p);
+      });
+
+      nhkws.on('finish', function() {
+        assert.deepEqual([
+          '２２日午後１０時ころ、長野県でマグニチュード６．７（Ｍ６．７）の地震がありました。長野市と小谷村、小川村で震度６弱でした。白馬村と信濃町は震度５強でした。',
+          'この地震で４５人がけがをしたと、２５日の昼までにわかっています。そして、３１の家が全部壊れて、４６の家が半分壊れました。'
+        ], res);
+        done();
+      });
+    });
+
+    it('should not emit empty paragraphs', function(done) {
+      var i = 0;
+      
+      nhkws.on('paragraph', function(p) {
         i++;
+      });
+
+      nhkws.on('finish', function() {
+        assert.equal(i, 2);
+        done();
       });
     });
   });

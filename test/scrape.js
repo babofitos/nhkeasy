@@ -3,58 +3,96 @@ var mocha = require('mocha');
 var assert = require('assert');
 var nock = require('nock');
 var fs = require('fs');
-var html = fs.readFileSync('./test/mock.html');
+var mockHtml = fs.readFileSync('./test/mock.html');
 var parsedResponse = require('./parsed.json');
+var request = require('request');
 
-
-var url = 'http://www3.nhk.or.jp/news/easy/k10013455581000/k10013455581000.html';
-
-nock('http://www3.nhk.or.jp')
-  .get('/news/easy/k10013455581000/k10013455581000.html')
-  .reply(200, html);
-
+var url = 'http://www3.nhk.or.jp/news/easy/k123/k123.html';
+var host = 'http://www3.nhk.or.jp';
+var route = '/news/easy/k123/k123.html';
 
 describe('nhkeasy', function() {
-  it('should return statusCode 200 and response', function() {
+  describe('memory', function() {
+    it('should return statusCode 200 and response', function(done) {
+      nock(host)
+        .get(route)
+        .reply(200, mockHtml);
 
-    nhkeasy({}, url, function(err, d) {
-      assert.equal(err, null);
-      assert.ok(d);
+      request(url, function(err, res, body) {
+        nhkeasy({}, body, function(err, d) {
+          assert.equal(err, null);
+          assert.ok(d);
+          done();
+        });
+      });
+    });
+
+    it('should err when title or p nodes not found', function(done) {
+      nock(host)
+        .get(route)
+        .reply(200, undefined);
+
+      request(url, function(err, res, body) {
+        nhkeasy({}, body, function(err, d) {
+          assert.equal(d, undefined);
+          assert.equal(err, 'Cannot find relevant nodes to scrape');
+          done();
+        });
+      });
+    });
+
+    it('should separate paragraphs using separator passed in', function(done) {
+      nock(host)
+        .get(route)
+        .reply(200, mockHtml);
+
+      request(url, function(err, res, body) {
+        nhkeasy({separator: '\n'}, body, function(err, d) {
+          assert.equal(err, null);
+          assert.deepEqual(d, parsedResponse);
+          done();
+        });
+      });
     });
   });
-
-  it('should return an error on bad link', function() {
-    nock('http://www3.nhk.or.jp')
-      .get('/news/easy/doesntexist.html')
-      .reply(404, undefined);
     
-    var url = 'http://www3.nhk.or.jp/news/easy/doesntexist.html';
+  describe('stream', function() {
+    var nhkws;
 
-    nhkeasy({}, url, function(err, d) {
-      assert.equal(err, 'Unable to resolve ' + url);
-      assert.equal(d, undefined);
+    beforeEach(function() {
+      nock(host)
+        .get(route)
+        .reply(200, mockHtml);
+
+      nhkws = nhkeasy();
+      request(url).pipe(nhkws);
     });
-  });
 
-  it('should err when title or p nodes not found', function() {
-    nock('http://www3.nhk.or.jp')
-      .get('/news/easy/k10013455581000/k10013455581000.html')
-      .reply(200, undefined);
-
-    nhkeasy({}, url, function(err, d) {
-      assert.equal(d, undefined);
-      assert.equal(err, 'Cannot find relevant nodes to scrape');
+    it('should return a writable stream when no args', function() {
+      var writestream = require('stream').Writable;
+      
+      assert.ok(nhkws instanceof writestream);
     });
-  });
 
-  it('should separate paragraphs using separator passed in', function() {
-    nock('http://www3.nhk.or.jp')
-      .get('/news/easy/k10013455581000/k10013455581000.html')
-      .reply(200, html);
+    it('should emit title when found', function(done) {
+      nhkws.on('title', function(title) {
+        assert.equal(title, '長野県で震度６弱の地震　これからも十分に注意して');
+        done();
+      });
+    });
 
-    nhkeasy({separator: '\n'}, url, function(err, d) {
-      assert.equal(err, null);
-      assert.deepEqual(d, parsedResponse);
+    it('should emit paragraphs when found', function(done) {
+      var i = 0;
+      nhkws.on('paragraph', function(p) {
+        if (i === 0) {
+          assert.equal(p, '２２日午後１０時ころ、長野県でマグニチュード６．７（Ｍ６．７）の地震がありました。長野市と小谷村、小川村で震度６弱でした。白馬村と信濃町は震度５強でした。');
+        }
+        else if (i === 1) {
+          assert.equal(p, 'この地震で４５人がけがをしたと、２５日の昼までにわかっています。そして、３１の家が全部壊れて、４６の家が半分壊れました。');
+          done();
+        }
+        i++;
+      });
     });
   });
 });

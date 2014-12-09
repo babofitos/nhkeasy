@@ -1,4 +1,4 @@
-# NHK News Easy Article Extracter
+# NHK News Easy Article Scraper
 
 A module to scrape NHK Web Easy articles.
 
@@ -23,6 +23,10 @@ nhkws.on('title', function(title) {
 nhkws.on('paragraph', function(p) {
   console.log(p);
 });
+
+nhkws.on('finish', function() {
+  console.log('done');
+})
 
 //or just put it in memory
 request(url, function(err, res, body) {

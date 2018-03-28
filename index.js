@@ -15,7 +15,7 @@ module.exports = function (options, body, cb) {
       ws.emit('title', $(elem).text().split('|')[1]);
     });
 
-    cornet.select('#newsarticle > p', function(elem) {
+    cornet.select('#js-article-body > p', function(elem) {
       var p = $(elem);
       
       if (p.children().length > 0) {
@@ -29,7 +29,7 @@ module.exports = function (options, body, cb) {
     var article = '';
     options = options || {};
     $ = cheerio.load(body);
-    var numberOfParagraphs = $('#newsarticle').children().length;
+    var numberOfParagraphs = $('#js-article-body').children().length;
     //take out preceding news web easy|
     var newsTitle = $('title').text().split('|')[1];
 
@@ -37,7 +37,7 @@ module.exports = function (options, body, cb) {
       cb('Cannot find relevant nodes to scrape');
     }
 
-    $('#newsarticle').children().each(function (index, element) {
+    $('#js-article-body').children().each(function (index, element) {
       
       var p = $(this);
       
